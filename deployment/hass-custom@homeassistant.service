@@ -1,0 +1,14 @@
+[Unit]
+    Description=Home Assistant custom iofunc systemd virtualenv
+    After=network-online.target mysql.service
+
+    [Service]
+    Type=simple
+    User=root
+    Group=root
+    WorkingDirectory=/home/homeassistant/hass-custom
+    ExecStart=/srv/homeassistant/bin/python iofunc.py
+    Restart=always
+    [Install]
+    WantedBy=multi-user.target
+
