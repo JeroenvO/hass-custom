@@ -7,7 +7,7 @@
     User=root
     Group=root
     WorkingDirectory=/home/homeassistant/hass-custom
-    ExecStart=/srv/homeassistant/bin/python iofunc.py
+    ExecStart=/srv/homeassistant/bin/python mqtt_listener.py
     Restart=always
     [Install]
     WantedBy=multi-user.target

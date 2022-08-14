@@ -1,8 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-A small example subscriber
-"""
+
 import logging
 import os
 import signal
@@ -29,10 +26,11 @@ INPUT_PINS_2 = []
 MIN_VOLUME = 20
 MAX_VOLUME = 70
 
+
 class IOFunc():
     def __init__(self):
         wp.wiringPiSetup()
-            
+
         for pin in OUTPUT_PINS_0:
             wp.pinMode(pin, OUTPUT)
 
@@ -54,7 +52,7 @@ class IOFunc():
         wp.digitalWrite(70, 0)  # display_write mode
         self.display1 = wp.lcdInit(2, 16, 8, 71, 69, 72, 73, 74, 75, 76, 77, 78, 79)  # connected to first expander
         wp.lcdClear(self.display1)
-        self.p = None # clock process
+        self.p = None  # clock process
 
         self.pwm = PWM(address=0x40)
         self.pwm.setPWMFreq(200)
@@ -100,7 +98,6 @@ class IOFunc():
             print(pin, value)
             wp.digitalWrite(pin, value)
 
-
     def start_clock(self):
         if self.p:
             print('stop clock {}'.format(self.p))
@@ -128,64 +125,7 @@ class IOFunc():
         print('finish stop clock')
 
 
-
-    def set_light(self, topic, payload):
-        print(str(topic), payload)
-
 def volume(vol):
-    subprocess.call(['amixer', '-c', '1', '-q', 'sset', 'Speaker', str(vol)+'%'], shell=False)
+    subprocess.call(['amixer', '-c', '1', '-q', 'sset', 'Speaker', str(vol) + '%'], shell=False)
     # subprocess.call(['pactl', 'set-sink-volume', '0', str(vol) + '%'])
 
-
-def on_message(mosq, obj, msg):
-    p = msg.payload.decode('utf-8')
-    print("%s %d %s" % (msg.topic, msg.qos, p))
-    parts = msg.topic.split('/')
-    print(parts)
-    if parts[1] == 'switch':
-        iof.set_output(int(parts[2]), p)
-    elif parts[1] == 'light':
-        light.callback(parts[1:].join('/'), p)
-    elif parts[1] == 'display':
-        iof.display_write(p)
-    elif parts[1] == 'clock':
-        if p == 'TOGGLE':
-            iof.show_clock()
-        else:
-            p = int(p)
-            if p:
-                iof.start_clock()
-            else:
-                iof.stop_clock()
-    elif parts[1] == 'sound':
-        iof.set_sound_input(int(p[0]))
-    elif parts[1] == 'volume':
-        volume(p)
-
-    mosq.publish('pong', 'ack', 0)
-
-
-
-def on_publish(mosq, obj, mid):
-    pass
-
-
-if __name__ == '__main__':
-    client = paho.Client()
-    client.on_message = on_message
-    client.on_publish = on_publish
-    _LOGGER = logging.getLogger(__name__)
-
-    iof = IOFunc()
-    light = RGB_Light(pwm=iof.pwm, client=client)
-    iof.display_write('Starting!')
-    # client.tls_set('root.ca', certfile='c1.crt', keyfile='c1.key')
-    sleep(1)
-    iof.set_output(66, 1)  # enable smart meter 5v, to read data.
-    sleep(1)
-    client.connect("127.0.0.1", 1883, 60)
-
-    client.subscribe("rpi1/#", 0)
-
-    while client.loop() == 0:
-        pass

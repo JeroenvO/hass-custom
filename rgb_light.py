@@ -1,23 +1,13 @@
 
 # inspired by https://github.com/smrtnt/Open-Home-Automation/blob/master/ha_mqtt_rgb_light/ha_mqtt_rgb_light.ino
 
-MQTT_LIGHT_STATE_TOPIC = "light/status"
-MQTT_LIGHT_COMMAND_TOPIC = "light/switch"
-
-# brightness
-MQTT_LIGHT_BRIGHTNESS_STATE_TOPIC = "brightness/status"
-MQTT_LIGHT_BRIGHTNESS_COMMAND_TOPIC = "brightness/set"
-
-# colors(rgb)
-MQTT_LIGHT_RGB_STATE_TOPIC = "rgb/status"
-MQTT_LIGHT_RGB_COMMAND_TOPIC = "rgb/set"
 
 # payloads
 LIGHT_ON = "ON"
 LIGHT_OFF = "OFF"
 
 class RGB_Light:
-    def __init__(self, pwm, client):
+    def __init__(self, pwm, client, pin_r, pin_g, pin_b):
         """
 
         :param pwm: PWM device of wiringpi
@@ -30,9 +20,9 @@ class RGB_Light:
         self.b = 0
         self.brightness = 0
         self.state = LIGHT_OFF
-        self.pin_r = None
-        self.pin_g = None
-        self.pin_b = None
+        self.pin_r = pin_r
+        self.pin_g = pin_g
+        self.pin_b = pin_b
 
 
     # set the dutycycle of a pwm output
@@ -45,14 +35,6 @@ class RGB_Light:
         self.b = b
         self.update()
 
-    def set_brightness(self, brightness):
-        self.brightness = brightness
-        self.update()
-
-    def set_brightness(self, brightness):
-        self.brightness = brightness
-        self.update()
-
     def update(self):
         if self.state == LIGHT_ON:
             self.set_pwm(self.pin_r, self.r*self.brightness)
@@ -63,8 +45,3 @@ class RGB_Light:
             self.set_pwm(self.pin_g, 0)
             self.set_pwm(self.pin_b, 0)
 
-    def callback(self, topic, payload):
-        print(f'Topic: {topic}. Payload: {payload}')
-        if topic == MQTT_LIGHT_COMMAND_TOPIC:
-            self.state = payload
-            self.update()
